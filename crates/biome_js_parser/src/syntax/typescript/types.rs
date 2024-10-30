@@ -42,7 +42,7 @@ use biome_js_syntax::JsSyntaxKind::TS_TYPE_ANNOTATION;
 use biome_js_syntax::T;
 use biome_js_syntax::{JsSyntaxKind::*, *};
 
-use super::ts_parse_error::expected_ts_type_assertion;
+use super::ts_parse_error::expected_ts_import_assertion;
 use super::{expect_ts_index_signature_member, is_at_ts_index_signature_member, MemberParent};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -1159,7 +1159,8 @@ fn parse_ts_mapped_type_optional_modifier_clause(p: &mut JsParser) -> ParsedSynt
 // type J = typeof import("test", { with: { "resolution-mode": "require" } }).a.b.c.d.e.f;
 // type K = import("test.json", { assert: {type: "json" }});
 // type L = import(anyTypeIsAllowedHereNotJustStrings);
-// type M = import("trailing-comma-in-2nd-arg-allowed", { assert: {type: "json",} })
+// type M = import("trailing-comma-in-assertion-allowed", { assert: {type: "json",} })
+// type N = import("empty-object-in-assertion-allowed", { assert: {} });
 
 // test_err ts ts_import_type_err
 // type A = typeof import("trailing-comma-not-allowed",);
@@ -1179,7 +1180,7 @@ fn parse_ts_import_type(p: &mut JsParser, context: TypeContext) -> ParsedSyntax 
     if p.eat(T![,]) {
         p.expect(T!['{']);
         parse_ts_import_type_assertion_container(p)
-            .or_add_diagnostic(p, expected_ts_type_assertion);
+            .or_add_diagnostic(p, expected_ts_import_assertion);
         p.expect(T!['}']);
     }
     p.expect(T![')']);
