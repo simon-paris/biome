@@ -14,7 +14,9 @@ impl FormatNodeRule<TsImportType> for FormatTsImportType {
             l_paren_token,
             argument,
             comma_token,
+            l_curly_token,
             assertions,
+            r_curly_token,
             r_paren_token,
             qualifier_clause,
             type_arguments,
@@ -34,7 +36,19 @@ impl FormatNodeRule<TsImportType> for FormatTsImportType {
         ]?;
 
         if let Some(comma_token) = comma_token {
-            write![f, [comma_token.format(), assertions.format(),]]?;
+            write![
+                f,
+                [
+                    comma_token.format(),
+                    space(),
+                    l_curly_token.format(),
+                    space(),
+                    assertions.format(),
+                    space(),
+                    r_curly_token.format(),
+                    space(),
+                ]
+            ]?;
         }
 
         write![

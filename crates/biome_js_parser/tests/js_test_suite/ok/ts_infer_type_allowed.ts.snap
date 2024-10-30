@@ -158,15 +158,15 @@ JsModule {
                 extends_type: TsImportType {
                     typeof_token: missing (optional),
                     import_token: IMPORT_KW@84..90 "import" [] [],
-                    arguments: JsCallArguments {
-                        l_paren_token: L_PAREN@90..91 "(" [] [],
-                        args: JsCallArgumentList [
-                            JsStringLiteralExpression {
-                                value_token: JS_STRING_LITERAL@91..97 "\"test\"" [] [],
-                            },
-                        ],
-                        r_paren_token: R_PAREN@97..98 ")" [] [],
+                    l_paren_token: L_PAREN@90..91 "(" [] [],
+                    argument: TsStringLiteralType {
+                        literal_token: JS_STRING_LITERAL@91..97 "\"test\"" [] [],
                     },
+                    comma_token: missing (optional),
+                    l_curly_token: missing (optional),
+                    assertions: missing (optional),
+                    r_curly_token: missing (optional),
+                    r_paren_token: R_PAREN@97..98 ")" [] [],
                     qualifier_clause: TsImportTypeQualifier {
                         dot_token: DOT@98..99 "." [] [],
                         right: JsReferenceIdentifier {
@@ -3197,17 +3197,19 @@ JsModule {
         2: TS_IMPORT_TYPE@84..110
           0: (empty)
           1: IMPORT_KW@84..90 "import" [] []
-          2: JS_CALL_ARGUMENTS@90..98
-            0: L_PAREN@90..91 "(" [] []
-            1: JS_CALL_ARGUMENT_LIST@91..97
-              0: JS_STRING_LITERAL_EXPRESSION@91..97
-                0: JS_STRING_LITERAL@91..97 "\"test\"" [] []
-            2: R_PAREN@97..98 ")" [] []
-          3: TS_IMPORT_TYPE_QUALIFIER@98..100
+          2: L_PAREN@90..91 "(" [] []
+          3: TS_STRING_LITERAL_TYPE@91..97
+            0: JS_STRING_LITERAL@91..97 "\"test\"" [] []
+          4: (empty)
+          5: (empty)
+          6: (empty)
+          7: (empty)
+          8: R_PAREN@97..98 ")" [] []
+          9: TS_IMPORT_TYPE_QUALIFIER@98..100
             0: DOT@98..99 "." [] []
             1: JS_REFERENCE_IDENTIFIER@99..100
               0: IDENT@99..100 "C" [] []
-          4: TS_TYPE_ARGUMENTS@100..110
+          10: TS_TYPE_ARGUMENTS@100..110
             0: L_ANGLE@100..101 "<" [] []
             1: TS_TYPE_ARGUMENT_LIST@101..108
               0: TS_INFER_TYPE@101..108

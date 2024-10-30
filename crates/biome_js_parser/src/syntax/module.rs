@@ -559,7 +559,7 @@ fn parse_any_named_import_specifier(p: &mut JsParser) -> ParsedSyntax {
 // import "x" with;
 // import ipsum from "ipsum.json" with { type: "json", lazy: true, startAtLine: 1 };
 // import { a } from "a.json" with
-fn parse_import_assertion(p: &mut JsParser) -> ParsedSyntax {
+pub(crate) fn parse_import_assertion(p: &mut JsParser) -> ParsedSyntax {
     if p.has_preceding_line_break() {
         return Absent;
     }

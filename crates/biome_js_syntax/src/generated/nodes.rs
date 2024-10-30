@@ -9950,7 +9950,9 @@ impl TsImportType {
             l_paren_token: self.l_paren_token(),
             argument: self.argument(),
             comma_token: self.comma_token(),
+            l_curly_token: self.l_curly_token(),
             assertions: self.assertions(),
+            r_curly_token: self.r_curly_token(),
             r_paren_token: self.r_paren_token(),
             qualifier_clause: self.qualifier_clause(),
             type_arguments: self.type_arguments(),
@@ -9971,17 +9973,23 @@ impl TsImportType {
     pub fn comma_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, 4usize)
     }
+    pub fn l_curly_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, 5usize)
+    }
     pub fn assertions(&self) -> Option<TsImportTypeAssertionContainer> {
-        support::node(&self.syntax, 5usize)
+        support::node(&self.syntax, 6usize)
+    }
+    pub fn r_curly_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, 7usize)
     }
     pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken> {
-        support::required_token(&self.syntax, 6usize)
+        support::required_token(&self.syntax, 8usize)
     }
     pub fn qualifier_clause(&self) -> Option<TsImportTypeQualifier> {
-        support::node(&self.syntax, 7usize)
+        support::node(&self.syntax, 9usize)
     }
     pub fn type_arguments(&self) -> Option<TsTypeArguments> {
-        support::node(&self.syntax, 8usize)
+        support::node(&self.syntax, 10usize)
     }
 }
 impl Serialize for TsImportType {
@@ -9999,7 +10007,9 @@ pub struct TsImportTypeFields {
     pub l_paren_token: SyntaxResult<SyntaxToken>,
     pub argument: SyntaxResult<AnyTsType>,
     pub comma_token: Option<SyntaxToken>,
+    pub l_curly_token: Option<SyntaxToken>,
     pub assertions: Option<TsImportTypeAssertionContainer>,
+    pub r_curly_token: Option<SyntaxToken>,
     pub r_paren_token: SyntaxResult<SyntaxToken>,
     pub qualifier_clause: Option<TsImportTypeQualifier>,
     pub type_arguments: Option<TsTypeArguments>,
@@ -10020,31 +10030,27 @@ impl TsImportTypeAssertionContainer {
     }
     pub fn as_fields(&self) -> TsImportTypeAssertionContainerFields {
         TsImportTypeAssertionContainerFields {
-            l_curly_token: self.l_curly_token(),
-            assertion_kind_token: self.assertion_kind_token(),
-            assert_token: self.assert_token(),
+            assertion_kind: self.assertion_kind(),
             colon_token: self.colon_token(),
-            assert_clause: self.assert_clause(),
+            l_curly_token: self.l_curly_token(),
+            assertions: self.assertions(),
             r_curly_token: self.r_curly_token(),
         }
     }
-    pub fn l_curly_token(&self) -> SyntaxResult<SyntaxToken> {
+    pub fn assertion_kind(&self) -> SyntaxResult<SyntaxToken> {
         support::required_token(&self.syntax, 0usize)
     }
-    pub fn assertion_kind_token(&self) -> SyntaxResult<SyntaxToken> {
+    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken> {
         support::required_token(&self.syntax, 1usize)
     }
-    pub fn assert_token(&self) -> SyntaxResult<SyntaxToken> {
+    pub fn l_curly_token(&self) -> SyntaxResult<SyntaxToken> {
         support::required_token(&self.syntax, 2usize)
     }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken> {
-        support::required_token(&self.syntax, 3usize)
-    }
-    pub fn assert_clause(&self) -> JsImportAssertionEntryList {
-        support::list(&self.syntax, 4usize)
+    pub fn assertions(&self) -> JsImportAssertionEntryList {
+        support::list(&self.syntax, 3usize)
     }
     pub fn r_curly_token(&self) -> SyntaxResult<SyntaxToken> {
-        support::required_token(&self.syntax, 5usize)
+        support::required_token(&self.syntax, 4usize)
     }
 }
 impl Serialize for TsImportTypeAssertionContainer {
@@ -10057,11 +10063,10 @@ impl Serialize for TsImportTypeAssertionContainer {
 }
 #[derive(Serialize)]
 pub struct TsImportTypeAssertionContainerFields {
-    pub l_curly_token: SyntaxResult<SyntaxToken>,
-    pub assertion_kind_token: SyntaxResult<SyntaxToken>,
-    pub assert_token: SyntaxResult<SyntaxToken>,
+    pub assertion_kind: SyntaxResult<SyntaxToken>,
     pub colon_token: SyntaxResult<SyntaxToken>,
-    pub assert_clause: JsImportAssertionEntryList,
+    pub l_curly_token: SyntaxResult<SyntaxToken>,
+    pub assertions: JsImportAssertionEntryList,
     pub r_curly_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -26112,8 +26117,16 @@ impl std::fmt::Debug for TsImportType {
                 &support::DebugOptionalElement(self.comma_token()),
             )
             .field(
+                "l_curly_token",
+                &support::DebugOptionalElement(self.l_curly_token()),
+            )
+            .field(
                 "assertions",
                 &support::DebugOptionalElement(self.assertions()),
+            )
+            .field(
+                "r_curly_token",
+                &support::DebugOptionalElement(self.r_curly_token()),
             )
             .field(
                 "r_paren_token",
@@ -26165,22 +26178,18 @@ impl std::fmt::Debug for TsImportTypeAssertionContainer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TsImportTypeAssertionContainer")
             .field(
-                "l_curly_token",
-                &support::DebugSyntaxResult(self.l_curly_token()),
-            )
-            .field(
-                "assertion_kind_token",
-                &support::DebugSyntaxResult(self.assertion_kind_token()),
-            )
-            .field(
-                "assert_token",
-                &support::DebugSyntaxResult(self.assert_token()),
+                "assertion_kind",
+                &support::DebugSyntaxResult(self.assertion_kind()),
             )
             .field(
                 "colon_token",
                 &support::DebugSyntaxResult(self.colon_token()),
             )
-            .field("assert_clause", &self.assert_clause())
+            .field(
+                "l_curly_token",
+                &support::DebugSyntaxResult(self.l_curly_token()),
+            )
+            .field("assertions", &self.assertions())
             .field(
                 "r_curly_token",
                 &support::DebugSyntaxResult(self.r_curly_token()),

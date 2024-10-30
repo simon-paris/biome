@@ -1177,8 +1177,10 @@ fn parse_ts_import_type(p: &mut JsParser, context: TypeContext) -> ParsedSyntax 
     p.expect(T!['(']);
     parse_ts_type(p, context).or_add_diagnostic(p, expected_ts_type);
     if p.eat(T![,]) {
+        p.expect(T!['{']);
         parse_ts_import_type_assertion_container(p)
             .or_add_diagnostic(p, expected_ts_type_assertion);
+        p.expect(T!['}']);
     }
     p.expect(T![')']);
 
@@ -1196,10 +1198,12 @@ fn parse_ts_import_type(p: &mut JsParser, context: TypeContext) -> ParsedSyntax 
 
 fn parse_ts_import_type_assertion_container(p: &mut JsParser) -> ParsedSyntax {
     let m = p.start();
-    p.expect(T!['{']);
     match p.cur() {
-        T![with] | T![assert] => {
-            p.bump_any();
+        T![assert] => {
+            p.expect(T![assert]);
+        }
+        T![with] => {
+            p.expect(T![with]);
         }
         _ => {
             m.abandon(p);
@@ -1207,6 +1211,7 @@ fn parse_ts_import_type_assertion_container(p: &mut JsParser) -> ParsedSyntax {
         }
     };
     p.expect(T![:]);
+    p.expect(T!['{']);
     ImportAssertionList::default().parse_list(p);
     p.expect(T!['}']);
     Present(m.complete(p, TS_IMPORT_TYPE_ASSERTION_CONTAINER))

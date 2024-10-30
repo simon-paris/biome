@@ -13,11 +13,10 @@ impl FormatNodeRule<TsImportTypeAssertionContainer> for FormatTsImportTypeAssert
         f: &mut JsFormatter,
     ) -> FormatResult<()> {
         let TsImportTypeAssertionContainerFields {
-            l_curly_token,
-            assertion_kind_token,
-            assert_token: _assert_token,
+            assertion_kind,
             colon_token,
-            assert_clause,
+            l_curly_token,
+            assertions,
             r_curly_token,
         } = node.as_fields();
 
@@ -26,16 +25,15 @@ impl FormatNodeRule<TsImportTypeAssertionContainer> for FormatTsImportTypeAssert
         write![
             f,
             [
-                l_curly_token.format(),
-                space(),
-                assertion_kind_token.format(),
+                assertion_kind.format(),
                 colon_token.format(),
                 space(),
+                l_curly_token.format(),
+                space(),
                 group(&soft_block_indent_with_maybe_space(
-                    &assert_clause.format(),
+                    &assertions.format(),
                     should_insert_space_around_brackets
                 )),
-                space(),
                 r_curly_token.format()
             ]
         ]

@@ -2136,17 +2136,21 @@ TsImportType =
 	argument: AnyTsType
 	(
 		','
+		'{'
 		assertions: TsImportTypeAssertionContainer
+		'}'
 	)?
 	')'
 	qualifier_clause: TsImportTypeQualifier?
 	type_arguments: TsTypeArguments?
 
+// type T = typeof import("a.json", { assert: { type: "json" } });
+//                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 TsImportTypeAssertionContainer =
-	'{'
-	assertion_kind: 'with' | 'assert'
+	assertion_kind: ('assert' | 'with')
 	':'
-	assert_clause: JsImportAssertionEntryList
+	'{'
+  assertions: JsImportAssertionEntryList
 	'}'
 
 TsImportTypeQualifier =
