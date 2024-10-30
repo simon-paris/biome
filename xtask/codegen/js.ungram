@@ -2132,14 +2132,26 @@ TsMappedTypeReadonlyModifierClause =
 TsImportType =
 	'typeof'?
 	'import'
-	arguments: JsCallArguments
+	'('
+	argument: AnyTsType
+	(
+		','
+		assertions: TsImportTypeAssertionContainer
+	)?
+	')'
 	qualifier_clause: TsImportTypeQualifier?
 	type_arguments: TsTypeArguments?
+
+TsImportTypeAssertionContainer =
+	'{'
+	assertion_kind: 'with' | 'assert'
+	':'
+	assert_clause: JsImportAssertionEntryList
+	'}'
 
 TsImportTypeQualifier =
 	'.'
 	right: AnyTsName
-
 
 TsArrayType =
 	element_type: AnyTsType

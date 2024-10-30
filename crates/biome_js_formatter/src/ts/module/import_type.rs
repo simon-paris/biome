@@ -11,7 +11,11 @@ impl FormatNodeRule<TsImportType> for FormatTsImportType {
         let TsImportTypeFields {
             typeof_token,
             import_token,
-            arguments,
+            l_paren_token,
+            argument,
+            comma_token,
+            assertions,
+            r_paren_token,
             qualifier_clause,
             type_arguments,
         } = node.as_fields();
@@ -24,7 +28,19 @@ impl FormatNodeRule<TsImportType> for FormatTsImportType {
             f,
             [
                 import_token.format(),
-                arguments.format(),
+                l_paren_token.format(),
+                argument.format(),
+            ]
+        ]?;
+
+        if let Some(comma_token) = comma_token {
+            write![f, [comma_token.format(), assertions.format(),]]?;
+        }
+
+        write![
+            f,
+            [
+                r_paren_token.format(),
                 qualifier_clause.format(),
                 type_arguments.format(),
             ]

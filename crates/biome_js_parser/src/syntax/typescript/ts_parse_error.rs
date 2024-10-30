@@ -125,6 +125,10 @@ pub(crate) fn expected_ts_type(p: &JsParser, range: TextRange) -> ParseDiagnosti
     expected_node("type", range, p)
 }
 
+pub(crate) fn expected_ts_type_assertion(p: &JsParser, range: TextRange) -> ParseDiagnostic {
+    expected_node("type assertion", range, p)
+}
+
 pub(crate) fn expected_ts_type_parameter(p: &JsParser, range: TextRange) -> ParseDiagnostic {
     expected_node("type parameter", range, p)
 }

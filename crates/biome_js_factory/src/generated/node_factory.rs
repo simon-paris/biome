@@ -5020,26 +5020,44 @@ impl TsImportEqualsDeclarationBuilder {
 }
 pub fn ts_import_type(
     import_token: SyntaxToken,
-    arguments: JsCallArguments,
+    l_paren_token: SyntaxToken,
+    argument: AnyTsType,
+    r_paren_token: SyntaxToken,
 ) -> TsImportTypeBuilder {
     TsImportTypeBuilder {
         import_token,
-        arguments,
+        l_paren_token,
+        argument,
+        r_paren_token,
         typeof_token: None,
+        comma_token: None,
+        assertions: None,
         qualifier_clause: None,
         type_arguments: None,
     }
 }
 pub struct TsImportTypeBuilder {
     import_token: SyntaxToken,
-    arguments: JsCallArguments,
+    l_paren_token: SyntaxToken,
+    argument: AnyTsType,
+    r_paren_token: SyntaxToken,
     typeof_token: Option<SyntaxToken>,
+    comma_token: Option<SyntaxToken>,
+    assertions: Option<TsImportTypeAssertionContainer>,
     qualifier_clause: Option<TsImportTypeQualifier>,
     type_arguments: Option<TsTypeArguments>,
 }
 impl TsImportTypeBuilder {
     pub fn with_typeof_token(mut self, typeof_token: SyntaxToken) -> Self {
         self.typeof_token = Some(typeof_token);
+        self
+    }
+    pub fn with_comma_token(mut self, comma_token: SyntaxToken) -> Self {
+        self.comma_token = Some(comma_token);
+        self
+    }
+    pub fn with_assertions(mut self, assertions: TsImportTypeAssertionContainer) -> Self {
+        self.assertions = Some(assertions);
         self
     }
     pub fn with_qualifier_clause(mut self, qualifier_clause: TsImportTypeQualifier) -> Self {
@@ -5056,7 +5074,12 @@ impl TsImportTypeBuilder {
             [
                 self.typeof_token.map(|token| SyntaxElement::Token(token)),
                 Some(SyntaxElement::Token(self.import_token)),
-                Some(SyntaxElement::Node(self.arguments.into_syntax())),
+                Some(SyntaxElement::Token(self.l_paren_token)),
+                Some(SyntaxElement::Node(self.argument.into_syntax())),
+                self.comma_token.map(|token| SyntaxElement::Token(token)),
+                self.assertions
+                    .map(|token| SyntaxElement::Node(token.into_syntax())),
+                Some(SyntaxElement::Token(self.r_paren_token)),
                 self.qualifier_clause
                     .map(|token| SyntaxElement::Node(token.into_syntax())),
                 self.type_arguments
@@ -5064,6 +5087,26 @@ impl TsImportTypeBuilder {
             ],
         ))
     }
+}
+pub fn ts_import_type_assertion_container(
+    l_curly_token: SyntaxToken,
+    assertion_kind_token: SyntaxToken,
+    assert_token: SyntaxToken,
+    colon_token: SyntaxToken,
+    assert_clause: JsImportAssertionEntryList,
+    r_curly_token: SyntaxToken,
+) -> TsImportTypeAssertionContainer {
+    TsImportTypeAssertionContainer::unwrap_cast(SyntaxNode::new_detached(
+        JsSyntaxKind::TS_IMPORT_TYPE_ASSERTION_CONTAINER,
+        [
+            Some(SyntaxElement::Token(l_curly_token)),
+            Some(SyntaxElement::Token(assertion_kind_token)),
+            Some(SyntaxElement::Token(assert_token)),
+            Some(SyntaxElement::Token(colon_token)),
+            Some(SyntaxElement::Node(assert_clause.into_syntax())),
+            Some(SyntaxElement::Token(r_curly_token)),
+        ],
+    ))
 }
 pub fn ts_import_type_qualifier(dot_token: SyntaxToken, right: AnyTsName) -> TsImportTypeQualifier {
     TsImportTypeQualifier::unwrap_cast(SyntaxNode::new_detached(

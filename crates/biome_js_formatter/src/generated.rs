@@ -7809,6 +7809,40 @@ impl IntoFormat<JsFormatContext> for biome_js_syntax::TsImportType {
         )
     }
 }
+impl FormatRule<biome_js_syntax::TsImportTypeAssertionContainer>
+    for crate::ts::module::import_type_assertion_container::FormatTsImportTypeAssertionContainer
+{
+    type Context = JsFormatContext;
+    #[inline(always)]
+    fn fmt(
+        &self,
+        node: &biome_js_syntax::TsImportTypeAssertionContainer,
+        f: &mut JsFormatter,
+    ) -> FormatResult<()> {
+        FormatNodeRule::<biome_js_syntax::TsImportTypeAssertionContainer>::fmt(self, node, f)
+    }
+}
+impl AsFormat<JsFormatContext> for biome_js_syntax::TsImportTypeAssertionContainer {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        biome_js_syntax::TsImportTypeAssertionContainer,
+        crate::ts::module::import_type_assertion_container::FormatTsImportTypeAssertionContainer,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule :: new (self , crate :: ts :: module :: import_type_assertion_container :: FormatTsImportTypeAssertionContainer :: default ())
+    }
+}
+impl IntoFormat<JsFormatContext> for biome_js_syntax::TsImportTypeAssertionContainer {
+    type Format = FormatOwnedWithRule<
+        biome_js_syntax::TsImportTypeAssertionContainer,
+        crate::ts::module::import_type_assertion_container::FormatTsImportTypeAssertionContainer,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule :: new (self , crate :: ts :: module :: import_type_assertion_container :: FormatTsImportTypeAssertionContainer :: default ())
+    }
+}
 impl FormatRule<biome_js_syntax::TsImportTypeQualifier>
     for crate::ts::module::import_type_qualifier::FormatTsImportTypeQualifier
 {

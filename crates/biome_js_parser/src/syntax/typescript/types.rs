@@ -5,21 +5,20 @@ use crate::prelude::*;
 use crate::state::{EnterType, SignatureFlags};
 use crate::syntax::expr::{
     is_at_binary_operator, is_at_expression, is_at_identifier, is_nth_at_identifier,
-    is_nth_at_identifier_or_keyword, parse_assignment_expression_or_higher,
-    parse_big_int_literal_expression, parse_identifier, parse_literal_expression, parse_name,
-    parse_number_literal_expression, parse_reference_identifier, parse_template_elements,
-    ExpressionContext,
+    is_nth_at_identifier_or_keyword, parse_big_int_literal_expression, parse_identifier,
+    parse_literal_expression, parse_name, parse_number_literal_expression,
+    parse_reference_identifier, parse_template_elements, ExpressionContext,
 };
 use crate::syntax::function::{
     parse_formal_parameter, parse_parameter_list, skip_parameter_start, ParameterContext,
 };
-use crate::syntax::js_parse_error;
 use crate::syntax::js_parse_error::{
     decorators_not_allowed, expected_identifier, expected_object_member_name, expected_parameter,
     expected_parameters, expected_property_or_signature, modifier_already_seen,
     modifier_must_precede_modifier,
 };
 use crate::syntax::metavariable::parse_metavariable;
+use crate::syntax::module::ImportAssertionList;
 use crate::syntax::object::{
     is_at_object_member_name, is_nth_at_type_member_name, parse_object_member_name,
 };
@@ -31,7 +30,6 @@ use crate::syntax::typescript::ts_parse_error::{
     ts_in_out_modifier_cannot_appear_on_a_type_parameter,
 };
 use biome_parser::parse_lists::{ParseNodeList, ParseSeparatedList};
-use biome_parser::ParserProgress;
 use enumflags2::{bitflags, make_bitflags, BitFlags};
 use smallvec::SmallVec;
 
@@ -44,6 +42,7 @@ use biome_js_syntax::JsSyntaxKind::TS_TYPE_ANNOTATION;
 use biome_js_syntax::T;
 use biome_js_syntax::{JsSyntaxKind::*, *};
 
+use super::ts_parse_error::expected_ts_type_assertion;
 use super::{expect_ts_index_signature_member, is_at_ts_index_signature_member, MemberParent};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -1158,6 +1157,15 @@ fn parse_ts_mapped_type_optional_modifier_clause(p: &mut JsParser) -> ParsedSynt
 // type H = import("test", { with: { "resolution-mode": "import" } })<string>;
 // type I = import("test", { with: { "resolution-mode": "require" } }).C<string>;
 // type J = typeof import("test", { with: { "resolution-mode": "require" } }).a.b.c.d.e.f;
+// type K = import("test.json", { assert: {type: "json" }});
+// type L = import(anyTypeIsAllowedHereNotJustStrings);
+// type M = import("trailing-comma-in-2nd-arg-allowed", { assert: {type: "json",} })
+
+// test_err ts ts_import_type_err
+// type A = typeof import("trailing-comma-not-allowed",);
+// type B = typeof import("3-arg-not-allowed", "arg2", "arg3");
+// type C = typeof import("empty-object-in-2nd-arg-not-allowed", {});
+// type D = typeof import("arbitrary-keys-in-2nd-arg-not-allowed", {unknown: 1});
 fn parse_ts_import_type(p: &mut JsParser, context: TypeContext) -> ParsedSyntax {
     if !p.at(T![typeof]) && !p.at(T![import]) {
         return Absent;
@@ -1166,42 +1174,13 @@ fn parse_ts_import_type(p: &mut JsParser, context: TypeContext) -> ParsedSyntax 
     let m = p.start();
     p.eat(T![typeof]);
     p.expect(T![import]);
-    let args = p.start();
     p.expect(T!['(']);
-    let args_list = p.start();
-
-    let mut progress = ParserProgress::default();
-    let mut error_range_start = p.cur_range().start();
-    let mut args_count = 0;
-
-    while !p.at(EOF) && !p.at(T![')']) {
-        progress.assert_progressing(p);
-        args_count += 1;
-
-        if args_count == 3 {
-            error_range_start = p.cur_range().start();
-        }
-
-        parse_assignment_expression_or_higher(p, ExpressionContext::default())
-            .or_add_diagnostic(p, js_parse_error::expected_expression_assignment);
-
-        if p.at(T![,]) {
-            p.bump_any();
-        } else {
-            break;
-        }
-    }
-    args_list.complete(p, JS_CALL_ARGUMENT_LIST);
-
-    if args_count == 0 || args_count > 2 {
-        let err = p.err_builder(
-            "`typeof import()` requires exactly one or two arguments. ",
-            error_range_start..p.cur_range().end(),
-        );
-        p.error(err);
+    parse_ts_type(p, context).or_add_diagnostic(p, expected_ts_type);
+    if p.eat(T![,]) {
+        parse_ts_import_type_assertion_container(p)
+            .or_add_diagnostic(p, expected_ts_type_assertion);
     }
     p.expect(T![')']);
-    args.complete(p, JS_CALL_ARGUMENTS);
 
     if p.at(T![.]) {
         let qualifier = p.start();
@@ -1213,6 +1192,24 @@ fn parse_ts_import_type(p: &mut JsParser, context: TypeContext) -> ParsedSyntax 
     parse_ts_type_arguments(p, context).ok();
 
     Present(m.complete(p, TS_IMPORT_TYPE))
+}
+
+fn parse_ts_import_type_assertion_container(p: &mut JsParser) -> ParsedSyntax {
+    let m = p.start();
+    p.expect(T!['{']);
+    match p.cur() {
+        T![with] | T![assert] => {
+            p.bump_any();
+        }
+        _ => {
+            m.abandon(p);
+            return Absent;
+        }
+    };
+    p.expect(T![:]);
+    ImportAssertionList::default().parse_list(p);
+    p.expect(T!['}']);
+    Present(m.complete(p, TS_IMPORT_TYPE_ASSERTION_CONTAINER))
 }
 
 // test ts ts_object_type

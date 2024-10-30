@@ -928,6 +928,11 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::TsImportType::new_unchecked(node) };
                     $body
                 }
+                $crate::JsSyntaxKind::TS_IMPORT_TYPE_ASSERTION_CONTAINER => {
+                    let $pattern =
+                        unsafe { $crate::TsImportTypeAssertionContainer::new_unchecked(node) };
+                    $body
+                }
                 $crate::JsSyntaxKind::TS_IMPORT_TYPE_QUALIFIER => {
                     let $pattern = unsafe { $crate::TsImportTypeQualifier::new_unchecked(node) };
                     $body
